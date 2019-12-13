@@ -1,4 +1,6 @@
 {"project-specs" [
                   {:project-path "deps.edn" :classpath-cmd ["clj" "-Spath"]}
                   ]
- "macro-defs" {day11/load-instructions [:params :bound-elements]}}
+ "macro-defs" {day11/load-instructions [:params :bound-elements]
+               day13/load-instructions [:params :bound-elements]
+               }}
