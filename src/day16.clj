@@ -1,12 +1,13 @@
 (ns day16
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as string]
+            [clojure.algo.generic.math-functions :refer [abs]]))
 
 (defn load-input []
   (slurp "inputs/day16/input1"))
 
 (defn parse-input [input]
   (->> input
-       (filter #(Character/isDigit %))
+       (filter #(Character/isDigit ^char %))
        (map #(Long/parseLong (Character/toString %)))
        (into [])))
 
@@ -20,7 +21,7 @@
          (mapcat #(repeat pos %)))))
 
 (defn get-ones-digit [n]
-  (Math/abs (rem n 10)))
+  (Math/abs ^long (rem n 10)))
 
 (defn calculate-line [input]
   (let [input-length (count input)
@@ -43,10 +44,14 @@
          string/join)))
 
 (defn calculate-line-fast [input]
-  (let [reversed-input (vec (reverse input))]
-    (vec (last (reduce (fn [[current-sum result] elem]
-                         (let [sum (+ current-sum elem)]
-                           [sum (cons (get-ones-digit sum) result)])) [0 '()] reversed-input)))))
+  (let [reversed-input (rseq input)]
+    (transduce identity (fn
+                          ([] [0 '()])
+                          ([[_ result]] (vec result))
+                          ([[current-sum result] elem]
+                           (let [sum (+ current-sum elem)]
+                             [sum (cons (get-ones-digit sum) result)])))
+               reversed-input)))
 
 (defn part-2 []
   (let [input (load-input)
@@ -56,7 +61,6 @@
         trimed-puzzle-input (vec (drop to-skip puzzle-input))]
 
     (->> (iterate calculate-line-fast trimed-puzzle-input)
-         (map-indexed #(do (println %1) %2))
          (drop 100)
          first
          (take 8)
