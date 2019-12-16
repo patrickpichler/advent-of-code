@@ -43,18 +43,10 @@
          string/join)))
 
 (defn calculate-line-fast [input]
-  (let [input-length (count input)
-        overall-sum (reduce + input)]
-
-    (loop [counter 1
-           current-sum overall-sum
-           result (list (get-ones-digit overall-sum))]
-      (if (= counter input-length) (vec (reverse result))
-          (let [current-elem (nth input (dec counter))
-                sum (- current-sum current-elem)]
-            (recur (inc counter)
-                   sum
-                   (cons (get-ones-digit sum) result)))))))
+  (let [reversed-input (vec (reverse input))]
+    (vec (last (reduce (fn [[current-sum result] elem]
+                         (let [sum (+ current-sum elem)]
+                           [sum (cons (get-ones-digit sum) result)])) [0 '()] reversed-input)))))
 
 (defn part-2 []
   (let [input (load-input)
