@@ -158,9 +158,9 @@
                                   (debug "Input nil:\t Suspend and wait for IO")
                                   (create-intcode-state :WAITING_FOR_INPUT memory output pos))
 
-                                (step :memory (set-output memory p1 dest value)
-                                      :input (rest input)
-                                      :inc-pos 2))))
+                                  (step :memory (set-output memory p1 dest value)
+                                        :input (rest input)
+                                        :inc-pos 2))))
 
        4 (load-instructions [source] memory pos
                             (let [value (get-input memory p1 source)]
@@ -214,6 +214,9 @@
   (run-intcode-computer memory (concat args input) pos))
 
 (defn create-vm-state
+  ([proc]
+   (create-vm-state proc :NEW nil []))
+
   ([proc data]
    (create-vm-state proc :NEW data []))
 
