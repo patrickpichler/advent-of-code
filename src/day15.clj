@@ -41,9 +41,6 @@
 (defn find-next-action [m pos response [last-action]]
   (find-next-way-to-go m pos))
 
-(defn find-shortest-path-length [m]
-  0)
-
 (defn reverse-action [action]
   (case action
     1 2
