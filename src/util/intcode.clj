@@ -213,9 +213,19 @@
 (defn run-intcode-computer-with-args [[memory pos] input args]
   (run-intcode-computer memory (concat args input) pos))
 
+(defn execute-vm [[proc _ data args]]
+  (proc data [] args))
+
+(defn arities [f]
+  (->> f
+       meta
+       :arglists
+       (map count)
+       (into #{})))
+
 (defn create-vm-state
   ([proc]
-   (create-vm-state proc :NEW nil []))
+   (create-vm-state proc :NEW (if (contains? (arities proc) 0) (proc) nil) []))
 
   ([proc data]
    (create-vm-state proc :NEW data []))
