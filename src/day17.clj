@@ -45,10 +45,10 @@
   (let [input (load-input)
         memory (intcode/parse-intcode-memory input)
         vms (intcode/run {:1 (intcode/create-intcode-vm memory [])
-                          :camera (intcode/create-vm-state run-camera '())}
+                          :robot (intcode/create-vm-state run-camera '())}
 
-                         {:1 [:camera]})
-        [_ _ [pixels]] (:camera vms)
+                         {:1 [:robot]})
+        [_ _ [pixels]] (:robot vms)
         s (parse-map pixels)]
     (->> s
          (filter (partial is-crossing s))
