@@ -262,6 +262,7 @@
   (case state
     :NEW true
     :TERMIATED false
+    :TERMINATED false
     :WAITING_FOR_INPUT (not (empty? (pipes id)))))
 
 (defn find-vm-to-run [vms pipes]
