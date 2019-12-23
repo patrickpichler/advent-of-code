@@ -158,9 +158,9 @@
                                   (debug "Input nil:\t Suspend and wait for IO")
                                   (create-intcode-state :WAITING_FOR_INPUT memory output pos))
 
-                                  (step :memory (set-output memory p1 dest value)
-                                        :input (rest input)
-                                        :inc-pos 2))))
+                                (step :memory (set-output memory p1 dest value)
+                                      :input (rest input)
+                                      :inc-pos 2))))
 
        4 (load-instructions [source] memory pos
                             (let [value (get-input memory p1 source)]
@@ -208,13 +208,14 @@
 
        99 (do
             (debug "VM terminated :: " pos)
-            (create-intcode-state :TERMIATED memory output pos))))))
+            (create-intcode-state :TERMINATED memory output pos))))))
 
 (defn run-intcode-computer-with-args [[memory pos] input args]
   (run-intcode-computer memory (concat args input) pos))
 
-(defn execute-vm [[proc _ data args]]
-  (proc data [] args))
+(defn execute-vm
+  ([[proc _ data args]] (proc data [] args))
+  ([[proc _ data] args] (proc data [] args)))
 
 (defn arities [f]
   (->> f
@@ -243,32 +244,36 @@
   ([memory args]
    (create-vm-state run-intcode-computer-with-args :NEW [(create-memory memory) 0] args)))
 
-(defn update-pipe-states [pipe-states ids-to-update output]
-  (if (empty? ids-to-update) pipe-states
-      (reduce #(update %1 %2 concat output) pipe-states ids-to-update)))
-
-(defn run-vm [vms pipes pipe-states [id [proc _ data args]]]
+(defn run-vm [vms output-controller input-mapper pipe-states [id [proc _ data args]]]
   (let [input (or (pipe-states id) [])
-        vm-input (reverse (or input []))
+        vm-input (input-mapper id (or input []))
         _ (debug "Run vm " id " with input " vm-input " and args " args)
+        ; _ (println "Run vm " id " with input " vm-input " and args " args)
         [s d output a] (proc data vm-input args)
         vm-state (create-vm-state proc s d a)
         updated-vms (assoc vms id vm-state)
-        pipes-to-update (pipes id)
-        updated-pipe-states (update-pipe-states (dissoc pipe-states id) pipes-to-update output)]
-    [updated-pipe-states updated-vms]))
+        pipe-update-map (output-controller id output)
+        updated-pipe-states (merge-with concat (dissoc pipe-states id) pipe-update-map)]
+    [updated-pipe-states updated-vms s]))
 
-(defn is-vm-runnable [vms pipes [id [_ state]]]
+(defn is-vm-runnable? [vms pipes [id [_ state]]]
   (case state
     :NEW true
     :TERMIATED false
     :TERMINATED false
+    :OUTPUT_READY false
     :WAITING_FOR_INPUT (not (empty? (pipes id)))))
 
+(defn has-vm-output-ready? [[id [_ state]]]
+  (= state :OUTPUT_READY))
+
 (defn find-vm-to-run [vms pipes]
-  (->> vms
-       (filter #(is-vm-runnable vms pipes %))
-       first))
+  (or (->> vms
+           (filter #(is-vm-runnable? vms pipes %))
+           first)
+      (->> vms
+           (filter has-vm-output-ready?)
+           first)))
 
 (defn get-state [[id [_ state]]]
   state)
@@ -276,14 +281,20 @@
 (defn vm-terminated? [vm]
   (= (get-state vm) :TERMIATED))
 
+(defn run-extended [vms-to-run output-controller input-mapper]
+  (loop [vms vms-to-run
+         pipe-states {}]
+
+    (let [vm-to-run (find-vm-to-run vms pipe-states)]
+      (if (nil? vm-to-run) vms
+          (let [[updated-pipe-states updated-vms exit-state] (run-vm vms output-controller input-mapper pipe-states vm-to-run)]
+            (if (= exit-state :KILL_COMPUTER) updated-vms
+                (recur updated-vms updated-pipe-states)))))))
+
 (defn run
   ([vms] (run vms {}))
   ([vms-to-run pipes]
-   (loop [vms vms-to-run
-          pipe-states {}]
-
-     (let [vm-to-run (find-vm-to-run vms pipe-states)]
-       (if (nil? vm-to-run) vms
-           (let [[updated-pipe-states updated-vms] (run-vm vms pipes pipe-states vm-to-run)]
-             (recur updated-vms updated-pipe-states)))))))
+   (run-extended vms-to-run (fn [vm-id output]
+                              (let [affected-pipes (pipes vm-id)]
+                                (into {} (map #(vector %1 output) affected-pipes)))) #(reverse %2))))
 
