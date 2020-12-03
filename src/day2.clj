@@ -21,7 +21,7 @@
   (is-valid-part1? {:min 13 :max 14 :char \q :password "qmzdrtqctvrqsb"})
   (count (filter #(do (println %) (= % \a)) "password"))
   (def i (map parse-line
-              (string/split-lines (slurp "inputs/day2/input1"))))
+              (string/split-lines (slurp "inputs/day2"))))
   (count (filter is-valid-part1? i))
   (first (filter is-valid-part1? i))
 
@@ -41,13 +41,13 @@
   (is-valid-part2? {:min 1 :max 3 :char \p :password "par"})
 
   (def i (map parse-line
-              (string/split-lines (slurp "inputs/day2/input1"))))
+              (string/split-lines (slurp "inputs/day2"))))
   (count (filter is-valid-part2? i))
 
   (nth "hello" 1))
 
 (defn -main [& args]
-  (let [input (slurp "inputs/day2/input1")
+  (let [input (slurp "inputs/day2")
         parsed-input (map parse-line (string/split-lines input))]
     (println (count (filter is-valid-part1? parsed-input)))
     (println (count (filter is-valid-part2? parsed-input)))))

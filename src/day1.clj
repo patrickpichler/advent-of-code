@@ -22,7 +22,7 @@
         (* f s (- 2020 (+ f s)))))))
 
 (defn -main [& args]
-  (let [input (slurp "inputs/day1/input1")
+  (let [input (slurp "inputs/day1")
         numbers (sort (map #(Integer/parseInt %) (string/split-lines input)))
         result1 (find-result1 numbers)
         result2 (find-result2 numbers)]
