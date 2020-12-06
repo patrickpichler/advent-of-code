@@ -27,7 +27,9 @@
 (comment
   (map #(vector %1 %2) (range 10) (range 1 10))
 
-  (find-my-seat lines))
+  (find-my-seat lines)
+  (time (find-my-seat lines))
+  )
 
 (defn -main [& args]
   (let [input (slurp "inputs/day5")
