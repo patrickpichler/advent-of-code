@@ -5,6 +5,7 @@ import queue
 from typing import Generator
 from queue import PriorityQueue
 from dataclasses import dataclass, field
+import time
 
 
 Point = namedtuple("Point", ["x", "y"])
@@ -199,4 +200,8 @@ def solve_part_2():
 
 
 solve_part_1()
+
+start = time.perf_counter_ns()
 solve_part_2()
+
+print(time.perf_counter_ns() - start)
