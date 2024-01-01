@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	input := "puzzles/01/input"
+	input := "puzzles/02/input"
 
 	if len(os.Args) > 1 {
 		input = os.Args[1]
